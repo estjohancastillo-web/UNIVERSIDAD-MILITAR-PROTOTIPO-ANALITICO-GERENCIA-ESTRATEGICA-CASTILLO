@@ -1,2 +1,23 @@
 # UNIVERSIDAD-MILITAR-PROTOTIPO-ANALITICO-GERENCIA-ESTRATEGICA-CASTILLO
 Prototipo analitico y matriz de indicadores para el proyecto de disponibilidad en parqueaderos.
+## Bloque 1: Identificación y Definición del Indicador
+
+| Fase DT en (//) | Pregunta analítica | Variables (nombres actor Control/Segmento) | Tipo Outcome/output | Cálculo / Transformación | Métrica (nombre fórmula) | Patrón esperado Condición refutación | Valor esperado para | Acción si... | Acción inducida | Estado (V/A/R) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Entender | ¿Cuál es la tasa de conversión actual de leads a clientes en el embudo de ventas? | `lead_id` (Identificador único del lead), `status` (Estado del lead: 'Convertido', 'En proceso', 'Descartado'), `fecha_creacion` (Fecha de registro del lead). | Outcome (Resultado de negocio) | Contar el total de leads con estado 'Convertido' y dividirlo entre el total de leads registrados en el mismo periodo. | **Tasa de Conversión de Leads**<br><br>`(Total de Leads Convertidos / Total de Leads Registrados) * 100` | **Si la tasa de conversión es menor al 5%, se refuta la hipótesis de eficiencia del embudo actual.** | >= 8% de conversión global. | Optimizar las etapas del embudo, revisar criterios de calificación de leads (MQL/SQL) y capacitar al equipo de ventas. | Ajuste en la estrategia de marketing digital para atraer leads mejor perfilados. | Verde |
+| Entender | ¿Cuánto tiempo promedio toma un lead desde que se registra hasta que realiza su primera compra? | `fecha_creacion` (Fecha de registro), `fecha_conversion` (Fecha de la primera compra), `lead_id`. | Outcome (Eficiencia del proceso) | Calcular la diferencia en días entre `fecha_conversion` y `fecha_creacion` para cada lead convertido, y luego obtener el promedio. | **Tiempo Promedio de Conversión (Sales Cycle Length)**<br><br>`AVG(fecha_conversion - fecha_creacion)` | **Si el tiempo promedio de conversión supera los 30 días, se refuta la hipótesis de un ciclo de venta ágil.** | <= 15 días promedio. | Identificar cuellos de botella en el seguimiento comercial, implementar automatizaciones de email marketing (nurturing). | Reestructuración del flujo de asignación de leads en el CRM. | Amarillo |
+
+## Bloque 2: Análisis de Comportamiento y Segmentación
+
+| Fase DT en (//) | Pregunta analítica | Variables (nombres actor Control/Segmento) | Tipo Outcome/output | Cálculo / Transformación | Métrica (nombre fórmula) | Patrón esperado Condición refutación | Valor esperado para | Acción si... | Acción inducida | Estado (V/A/R) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Explorar | ¿Qué porcentaje de usuarios abandona el carrito de compras según el dispositivo de navegación (Mobile vs. Desktop)? | `session_id` (ID de sesión), `device_type` (Tipo de dispositivo: Mobile, Desktop), `cart_status` (Estado: 'Abandonado', 'Comprado'). | Output (Comportamiento del usuario) | [Ver bloque de código 1] | **Tasa de Abandono de Carrito por Dispositivo**<br><br>`(Total Sesiones con Carrito Abandonado en Dispositivo X / Total Sesiones con Carrito Creado en Dispositivo X) * 100` | **Si la tasa de abandono en Mobile es un 20% mayor que en Desktop, se refuta la hipótesis de una buena experiencia UX mobile.** | Tasa de abandono < 60% en cualquier dispositivo. | Realizar auditoría de UX/UI en el flujo de pago móvil, simplificar formularios y mejorar la velocidad de carga. | Rediseño de la interfaz de checkout móvil. | Rojo |
+| Explorar | ¿Cuál es el valor promedio de compra (Ticket Promedio) de los clientes recurrentes en comparación con los nuevos? | `order_id` (ID de la orden), `customer_id` (ID del cliente), `order_amount` (Monto de la compra), `customer_type` (Nuevo, Recurrente). | Outcome (Valor de cliente) | Agrupar las órdenes por `customer_type` y calcular el promedio de `order_amount` para cada grupo en un rango de fechas. | **Ticket Promedio por Tipo de Cliente (AOV)**<br><br>`SUM(order_amount) / COUNT(order_id)` | **Si el ticket promedio de los clientes recurrentes no es al menos un 25% mayor que el de los nuevos, se refuta la hipótesis de lealtad rentable.** | Clientes Recurrentes: >= $75 USD<br>Clientes Nuevos: >= $50 USD | Implementar estrategias de cross-selling y up-selling dirigidas a clientes existentes; crear un programa de fidelización. | Lanzamiento de campañas exclusivas de recompra con descuentos escalonados. | Verde |
+
+[Ver bloque de código 1]
+```sql
+SELECT 
+    device_type,
+    COUNT(CASE WHEN cart_status = 'Abandonado' THEN 1 END) * 100.0 / COUNT(session_id) AS tasa_abandono
+FROM sesiones_web
+GROUP BY device_type;
